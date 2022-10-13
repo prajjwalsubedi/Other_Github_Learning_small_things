@@ -15,6 +15,9 @@ def scrapper(user_input):
 
     # Obtain information from tag <table>
     table1 = soup.find('ul', {"class": "list list--kv list--col50"})
+    price = soup.find('bg-quote', {"class": "value"}).text
+    change = soup.find('span', {"class": "change--point--q"}).text
+    per_change = soup.find('span', {"class": "change--percent--q"}).text
 
     # Obtain every title of columns with tag <th>
     headers = []
@@ -34,8 +37,7 @@ def scrapper(user_input):
             data.append(title)
     length = len(mydata)
     mydata.loc[length] = data
-
-    my_dict = {header: row[header] for header in headers for (index, row) in mydata.iterrows()}
+    my_dict = {"Price": price, "Change": change, "% Change": per_change}
+    my_dict.update({header: row[header] for header in headers for (index, row) in mydata.iterrows()})
 
     return my_dict
-
