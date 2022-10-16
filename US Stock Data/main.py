@@ -22,7 +22,6 @@ def button_clicked():
         show.grid(column=2, row=row_count)
 
 
-
 heading = Label(text="Stock Details Retriever ", font=("Times New Roman", 24, "bold"))
 heading.config(padx=5, pady=10)
 heading.grid(column=2, row=0)
