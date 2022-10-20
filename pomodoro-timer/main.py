@@ -11,11 +11,23 @@ WORK_MIN = 25
 SHORT_BREAK_MIN = 5
 LONG_BREAK_MIN = 20
 reps = 0
+ticks = ""
+timer = None
 
 
 # ---------------------------- TIMER RESET ------------------------------- #
+def reset_timer():
+    global timer, ticks, reps
+    window.after_cancel(timer)
+    canvas.itemconfig(timer_text, text="00:00")
+    title.config(text="Timer")
+    tick.config(text="")
+    ticks = ""
+    reps = 0
+    timer = None
 
-# ---------------------------- TIMER MECHANISM ------------------------------- # 
+
+# ---------------------------- TIMER MECHANISM ------------------------------- #
 def start_timer():
     global reps
     reps += 1
@@ -24,22 +36,33 @@ def start_timer():
     long_break = LONG_BREAK_MIN * 60
 
     if reps % 8 == 0:
+        title.config(text="Long Break", fg=RED)
         count_down(long_break)
+
     elif reps % 2 == 0:
+        title.config(text="Short Break", fg=PINK)
         count_down(short_break)
+
     else:
+        title.config(text="Work", fg=GREEN)
         count_down(work)
 
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- #
 def count_down(count):
-    min = math.floor(count / 60)
+    global reps, ticks, timer
+    minutes = math.floor(count / 60)
     sec = count % 60
     if sec < 10:
         sec = f"0{sec}"
-    canvas.itemconfig(timer_text, text=f"{min}:{sec}")
+    canvas.itemconfig(timer_text, text=f"{minutes}:{sec}")
     if count > 0:
-        window.after(1, count_down, count - 1)
+        timer = window.after(1, count_down, count - 1)
+    else:
+        start_timer()
+        if reps % 2 == 0:
+            ticks += "✓"
+            tick.config(text=ticks)
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -61,9 +84,9 @@ canvas.grid(column=2, row=2)
 start_btn = Button(text="Start", highlightthickness=0, bd=0, command=start_timer)
 start_btn.grid(column=0, row=3)
 
-reset_btn = Button(text="Reset", highlightthickness=0, bd=0)
+reset_btn = Button(text="Reset", highlightthickness=0, bd=0, command=reset_timer)
 reset_btn.grid(column=3, row=3)
 
-tick = Label(text="✓️", highlightthickness=0, fg=GREEN, bg=YELLOW, font=(FONT_NAME, 24, "bold"))
+tick = Label(highlightthickness=0, fg=GREEN, bg=YELLOW, font=(FONT_NAME, 24, "bold"))
 tick.grid(column=2, row=4)
 window.mainloop()
