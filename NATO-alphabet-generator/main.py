@@ -1,13 +1,16 @@
 import pandas
 
 data = pandas.read_csv("nato_phonetic_alphabet.csv")
-data_dict = {}
-for (index, row) in data.iterrows():
-    row_letter = row.letter
-    row_code = row.code
-    data_dict.update({row_letter: row_code})
+data_dict = {row.letter: row.code for (index, row) in data.iterrows()}
 
-name = input("Please enter your name? \n").upper()
-
-name_list = [data_dict[letter] for letter in name]
-print(name_list)
+is_on = True
+while is_on:
+    name = input("Please enter your name? \n").upper()
+    try:
+        name_list = [data_dict[letter] for letter in name]
+    except KeyError:
+        print("Sorry, Only letters in the Alphabet please")
+        is_on = True
+    else:
+        print(name_list)
+        is_on = False

@@ -2,6 +2,7 @@ from tkinter import *
 from tkinter import messagebox
 from random import shuffle, randint, choice
 import pyperclip
+import json
 
 window = Tk()
 window.title("Password Manager")
@@ -16,34 +17,62 @@ def generate_password():
     symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
     numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 
-    password_letters = [choice(letters) for char in range(randint(8, 10))]
-    password_symbols = [choice(symbols) for char in range(randint(2, 4))]
-    password_numbers = [choice(numbers) for char in range(randint(2, 4))]
+    password_letters = [choice(letters) for _ in range(randint(8, 10))]
+    password_symbols = [choice(symbols) for _ in range(randint(2, 4))]
+    password_numbers = [choice(numbers) for _ in range(randint(2, 4))]
 
     password_list = password_letters + password_numbers + password_symbols
 
     shuffle(password_list)
 
-    password = "".join(password_list)
-    password_input.insert(0, password)
-    pyperclip.copy(password)
+    password_new = "".join(password_list)
+    password_input.insert(0, password_new)
+    pyperclip.copy(password_new)
 
 
 # Save Password
 def save_details():
-    website = website_input.get()
-    email = email_input.get()
-    password = password_input.get()
-    if len(website) == 0 or len(password) == 0:
+    website_to_save = website_input.get()
+    email_to_save = email_input.get()
+    password_to_save = password_input.get()
+    data = {
+        website_to_save: {
+            "email": email_to_save,
+            "password": password_to_save
+        }
+    }
+    if len(website_to_save) == 0 or len(password_to_save) == 0:
         messagebox.showinfo(title="OOPS !!", message="Please make sure you haven't left any field empty.")
     else:
-        ask_ok = messagebox.askokcancel(title=website,
-                                        message=f"These are the details entered: \nEmail: {email} \nPassword: {password} \nIs it okey to Save?")
+        ask_ok = messagebox.askokcancel(title=website_to_save,
+                                        message=f"These are the details entered: \nEmail: {email_to_save} \n"
+                                                f"Password: {password_to_save} \nIs it okay to Save?")
         if ask_ok:
-            with open("data.txt", "a") as data:
-                data.write(f"{website} | {email} | {password}\n")
+            try:
+                with open("data.json", "r") as data_file:
+                    old_data = json.load(data_file)
+            except FileNotFoundError:
+                with open("data.json", "w") as data_file:
+                    json.dump(data, data_file, indent=4)
+            except json.JSONDecodeError:
+                with open("data.json", "w") as data_file:
+                    json.dump(data, data_file, indent=4)
+            else:
+                with open("data.json", "w") as data_file:
+                    old_data.update(data)
+                    json.dump(old_data, data_file, indent=4)
+            finally:
                 website_input.delete(0, END)
                 password_input.delete(0, END)
+
+
+def search():
+    website_searched = website_input.get()
+    with open("data.json") as data_file:
+        data = json.load(data_file)
+        details = data[website_searched]
+        messagebox.showinfo(title=website_searched,
+                            message=f"Website: {website_searched}\nusername: {details['email']}\n Password: {details['password']} ")
 
 
 # UI SETUP
@@ -55,9 +84,12 @@ canvas.grid(column=2, row=1)
 website = Label(text="Website: ")
 website.grid(column=1, row=2)
 
-website_input = Entry(width=37)
+website_input = Entry(width=20)
 website_input.focus()
-website_input.grid(column=2, columnspan=2, row=2)
+website_input.grid(column=2, row=2)
+
+search_button = Button(text="Search", command=search, width=13)
+search_button.grid(column=3, row=2)
 
 email = Label(text="Email/Username: ")
 email.grid(column=1, row=3)
