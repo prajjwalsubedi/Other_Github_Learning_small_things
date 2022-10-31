@@ -68,9 +68,16 @@ def save_details():
 
 def search():
     website_searched = website_input.get()
-    with open("data.json") as data_file:
-        data = json.load(data_file)
-        details = data[website_searched]
+    try:
+        with open("data.json") as data_file:
+            data = json.load(data_file)
+            details = data[website_searched]
+    except FileNotFoundError:
+        messagebox.showinfo(title="ERROR", message="No Data File found. First Add some Data")
+    except KeyError:
+        messagebox.showinfo(title=website_searched,
+                            message=f"There are no records saved before for: {website_searched}")
+    else:
         messagebox.showinfo(title=website_searched,
                             message=f"Website: {website_searched}\nusername: {details['email']}\n Password: {details['password']} ")
 
